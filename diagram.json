@@ -1,0 +1,137 @@
+{
+  "version": 1,
+  "author": "José Luis Darias Perdomo",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "wokwi-breadboard-half", "id": "bb1", "top": 227.4, "left": 290.8, "attrs": {} },
+    { "type": "wokwi-arduino-uno", "id": "uno", "top": -66.6, "left": -19.8, "attrs": {} },
+    {
+      "type": "wokwi-dht22",
+      "id": "dht1",
+      "top": 57.9,
+      "left": 637.8,
+      "attrs": { "humidity": "23", "temperature": "3.3" }
+    },
+    {
+      "type": "wokwi-lcd1602",
+      "id": "lcd1",
+      "top": 361.6,
+      "left": -176.8,
+      "attrs": { "pins": "i2c" }
+    },
+    { "type": "wokwi-ky-040", "id": "encoder1", "top": -132.7, "left": -192.8, "attrs": {} },
+    { "type": "wokwi-potentiometer", "id": "pot1", "top": 27.5, "left": -317, "attrs": {} },
+    { "type": "wokwi-potentiometer", "id": "pot2", "top": 27.5, "left": -182.6, "attrs": {} },
+    {
+      "type": "wokwi-photoresistor-sensor",
+      "id": "ldr1",
+      "top": -265.6,
+      "left": 125.6,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-text",
+      "id": "ky-040",
+      "top": -57.6,
+      "left": -220.8,
+      "attrs": { "text": "DIRECCIÓN VIENTO" }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "potentiometer_1",
+      "top": 0,
+      "left": -326.4,
+      "attrs": { "text": "VEL. VIENTO" }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "potentiometer_2",
+      "top": 0,
+      "left": -201.6,
+      "attrs": { "text": "CALIDAD AIRE" }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "servo_frio",
+      "top": 384,
+      "left": 729.6,
+      "attrs": { "text": "VALVULA - FRIO" }
+    },
+    {
+      "type": "wokwi-servo",
+      "id": "servo1",
+      "top": 276.4,
+      "left": 681.6,
+      "attrs": { "hornColor": "#000088" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led1",
+      "top": 313.2,
+      "left": 445.4,
+      "attrs": { "color": "orange" }
+    },
+    {
+      "type": "wokwi-servo",
+      "id": "servo2",
+      "top": 439.6,
+      "left": 691.2,
+      "attrs": { "hornColor": "#FF0000" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r1",
+      "top": 388.8,
+      "left": 431.45,
+      "rotate": 90,
+      "attrs": { "value": "220" }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "VALVULA - CALOR",
+      "top": 566.4,
+      "left": 729.6,
+      "attrs": { "text": "VALVULA CALOR" }
+    }
+  ],
+  "connections": [
+    [ "uno:GND.3", "bb1:tn.1", "black", [ "v0" ] ],
+    [ "uno:GND.2", "bb1:bn.1", "black", [ "v0" ] ],
+    [ "uno:5V", "bb1:bp.1", "red", [ "v0" ] ],
+    [ "uno:5V", "bb1:tp.1", "red", [ "v0" ] ],
+    [ "dht1:VCC", "bb1:tp.25", "red", [ "v0" ] ],
+    [ "dht1:GND", "bb1:tn.25", "black", [ "v0" ] ],
+    [ "dht1:SDA", "uno:2", "orange", [ "v28.8", "h-374.3", "v-201.6", "h-71.3" ] ],
+    [ "lcd1:SDA", "uno:A4", "green", [ "h-57.6", "v-143.8", "h466.2" ] ],
+    [ "lcd1:SCL", "uno:A5", "limegreen", [ "h-76.8", "v-134.1", "h494.9" ] ],
+    [ "ldr1:VCC", "bb1:tp.23", "red", [ "h0" ] ],
+    [ "ldr1:GND", "bb1:tn.22", "black", [ "h0" ] ],
+    [ "pot2:GND", "bb1:tn.4", "black", [ "v163.2", "h507.2" ] ],
+    [ "pot2:VCC", "bb1:tp.4", "red", [ "v144", "h487.2" ] ],
+    [ "pot2:SIG", "uno:A0", "green", [ "v48", "h418.2" ] ],
+    [ "pot1:SIG", "uno:A1", "green", [ "v201.6", "h427.7" ] ],
+    [ "encoder1:GND", "bb1:tn.8", "black", [ "h0" ] ],
+    [ "encoder1:VCC", "bb1:tp.6", "red", [ "h0" ] ],
+    [ "encoder1:DT", "uno:3", "orange", [ "h0" ] ],
+    [ "encoder1:CLK", "uno:7", "gold", [ "h0" ] ],
+    [ "ldr1:AO", "uno:A2", "green", [ "v402.5", "h-90.4" ] ],
+    [ "lcd1:GND", "bb1:bn.3", "black", [ "h-28.8", "v-67.2", "h545.6" ] ],
+    [ "lcd1:VCC", "bb1:bp.4", "red", [ "h-38.4", "v-95.9", "h9.6" ] ],
+    [ "pot1:VCC", "bb1:bp.6", "red", [ "v451.2", "h650.4" ] ],
+    [ "pot1:GND", "bb1:bn.7", "black", [ "v460.8", "h672" ] ],
+    [ "servo1:GND", "bb1:tn.25", "black", [ "h0" ] ],
+    [ "servo1:V+", "bb1:tp.24", "red", [ "h0" ] ],
+    [ "servo2:GND", "bb1:tn.23", "black", [ "h0" ] ],
+    [ "servo2:V+", "bb1:tp.21", "red", [ "h0" ] ],
+    [ "servo1:PWM", "bb1:23t.d", "orange", [ "h0" ] ],
+    [ "servo2:PWM", "bb1:22t.d", "orange", [ "h0" ] ],
+    [ "bb1:22t.a", "uno:9", "orange", [ "v-422.4", "h-375.2" ] ],
+    [ "bb1:23t.a", "uno:10", "orange", [ "v-441.6", "h-394.3" ] ],
+    [ "bb1:17b.h", "uno:11", "gold", [ "h28.8", "v-547.2", "h-375" ] ],
+    [ "led1:A", "bb1:17b.g", "", [ "$bb" ] ],
+    [ "led1:C", "bb1:16b.g", "", [ "$bb" ] ],
+    [ "r1:1", "bb1:16b.h", "", [ "$bb" ] ],
+    [ "r1:2", "bb1:bn.13", "", [ "$bb" ] ]
+  ],
+  "dependencies": {}
+}
