@@ -108,6 +108,12 @@ String roseta[20] = {"Norte","Noreste", "Noreste", "Noreste","Noreste","Este", "
 
 
 Servo servoFrio, servoCalor; // Creamos variables para manejar servos
+bool counterState = false;
+int tempThreshold = 3;
+int maxServoLimit = 190; // Limite máximo de los servos
+uint8_t normalStateTempControl[2] = {25, 80};
+
+
 
 //Callback de interrupciones del encoder
 void OnEncoderChange() {
@@ -132,10 +138,7 @@ void setup() {
   Serial.begin(115200); //Se inicia la comunicación serie a una velocidad de 115200 baudios (bits por segundo)  
 
   lcd.init(); //Se inicia la pantalla LC I2C 
-  lcd.backlight(); //encendemos la luz de fondo (backlight) de la pantalla LCD 
-
- //Iniciamos caracteres personalizados 
-
+  lcd.backlight(); //encendemos la luz de fondo (backlight) de la pantalla LCD
   //Iniciamos caracteres personalizados
   lcd.createChar(0, termometro); 
   lcd.createChar(1, gota); 
@@ -152,10 +155,43 @@ void setup() {
   //Configuramos los pines de los servos
   servoFrio.attach(SERVO_FRIO);
   servoCalor.attach(SERVO_CALOR);
-
+  servoFrio.write(0);
+  servoCalor.write(0);
 
   //Iniciamos callback de interrupciones del encoder 
   attachInterrupt(digitalPinToInterrupt(ENCODER_DT), OnEncoderChange, LOW);
+}
+
+void controlServoState(float *temp, float *hum) {
+  //uint8_t tempPosMedia = 25;
+  
+  bool tempState = true; // Estado del frio 1 = frio, 0 = calor
+  int temperaturaActual = (int)*temp; // Se convierte la variable tipo float a int
+
+  tempState = temperaturaActual >= normalStateTempControl[0] ? true : false; // Se determina el estado del servo frio (1) o calor (0)
+  
+  if(tempState && temperaturaActual > normalStateTempControl[0] + tempThreshold && !counterState) { // Si el estado es frio y la temperatura es mayor a 25ºC + 3ºC
+    servoFrio.write(20);
+  }else if(!tempState && temperaturaActual < normalStateTempControl[0] - tempThreshold && !counterState) { // Si el estado es calor y la temperatura es menor a 25ºC - 3ºC
+    servoCalor.write(20);
+  }
+
+  /*int localPercent = 0;
+  int servoValue = 0;
+  if(counterState) {    
+    localPercent = temperaturaActual - tempThreshold - normalStateTempControl[0];
+    servoValue = servoFrio.read();
+  } else {
+    localPercent = abs(temperaturaActual + tempThreshold - normalStateTempControl[0]);
+    servoValue = servoCalor.read();
+  }*/
+  
+
+
+  counterState = true;
+  //temperaturaActual = abs(temperaturaActual);    
+  Serial.print("Temperatura: ");
+  Serial.println(temperaturaActual);
 }
 
 void loop() {
@@ -164,10 +200,10 @@ void loop() {
   lcd.clear(); // borra el contenido de la pantalla LCD
   lcd.setCursor(0, 0); // Posicionamos el cursor en la pantalla LCD (columna:0 | fila:0)
 
-  byte temperature = 0; // declaramos variables locales temperatura y humidity
-  byte humidity = 0;
+  float temperature = 0; // declaramos variables locales temperatura y humidity
+  float humidity = 0;
   int err = SimpleDHTErrSuccess; // Se inicializa la variable la variable err ¨sin error¨
-  if ((err = dht22.read(&temperature, &humidity, NULL)) != SimpleDHTErrSuccess) {
+  if ((err = dht22.read2(&temperature, &humidity, NULL)) != SimpleDHTErrSuccess) {
     lcd.clear();
     lcd.println("Error DHT22 ="); // Muestra el mensaje de error
     lcd.println(SimpleDHTErrCode(err)); // Muestra el código de error
@@ -176,7 +212,9 @@ void loop() {
 
     delay(2000); // Retardo de 2 segundos
     return; // Sale de la función
-  }  
+  }
+
+  controlServoState(&temperature, &humidity);
   
   lcd.write(byte(0)); // Muestra carácter (termómetro) que está en posición mem (0)
   lcd.setCursor(2, 0); // Posicionamos el cursor en la pantalla LCD (columna:2 | fila:0) 
