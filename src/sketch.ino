@@ -1,6 +1,6 @@
 #include <Arduino.h>
 
-//Actividad 1: Sistema de Monitorización de Clima
+//Actividad 2: Sistema de control y actuación en función del clima
 /* Este código realiza la monitorización del clima con un sistema basado en Arduino Uno
 que mide temperatura, humedad, luminosidad, calidad del aire, velocidad y dirección 
 del viento usando varios sensores y una pantalla LCD */
@@ -9,6 +9,7 @@ del viento usando varios sensores y una pantalla LCD */
 
 #include <SimpleDHT.h> // Libreria del Sensor Humedad y Temperatura | DHT22
 #include <LiquidCrystal_I2C.h> // Libreria LCD I2C
+#include <Servo.h>
 
 #define DHTPIN 2 // Pin digital 2 como entrada DHT22
 #define I2C_ADDR    0x27 // Dirección I2C del LCD I2C
@@ -16,6 +17,9 @@ del viento usando varios sensores y una pantalla LCD */
 #define LCD_LINES   2 // Cantidad de filas del LCD I2C
 #define ENCODER_CLK 7 // Pin digital 7 como entrada CLK del encoder
 #define ENCODER_DT  3 // Pin digital 3 como entrada DT del encoder
+
+#define SERVO_CALOR  9 // Definimos pin para el control del servo caliente
+#define SERVO_FRIO  10  // Definimos pin para el control del servo frio
 
 int CALIDAD_AIRE_PIN = A0; // Pin A0 como entrada potenciometro CALIDAD_AIRE
 int VELOCIDAD_VIENTO_PIN = A1; // Pin A1 como entrada potenciómetro VEL_VIENTO 
@@ -103,6 +107,8 @@ int maxpos = 19;
 String roseta[20] = {"Norte","Noreste", "Noreste", "Noreste","Noreste","Este", "Sureste","Sureste", "Sureste","Sureste","Sur", "Suroeste","Suroeste","Suroeste","Suroeste", "Oeste",  "Noroeste","Noroeste","Noroeste", "Noroeste" };
 
 
+Servo servoFrio, servoCalor; // Creamos variables para manejar servos
+
 //Callback de interrupciones del encoder
 void OnEncoderChange() {
   static unsigned long ultimaInter= 0;
@@ -142,6 +148,11 @@ void setup() {
   pinMode(LDR_PIN, INPUT);
   pinMode(ENCODER_CLK, INPUT);
   pinMode(ENCODER_DT, INPUT);
+
+  //Configuramos los pines de los servos
+  servoFrio.attach(SERVO_FRIO);
+  servoCalor.attach(SERVO_CALOR);
+
 
   //Iniciamos callback de interrupciones del encoder 
   attachInterrupt(digitalPinToInterrupt(ENCODER_DT), OnEncoderChange, LOW);
