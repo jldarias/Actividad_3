@@ -5,8 +5,6 @@
 
 #define I2C_ADDR    0x27
 
-#define TERMOMETRO 
-
 class LCD {        
     public:
         int displayTimeSpeed = 2000; // Tiempo de refresco de la pantalla LCD en milisegundos
@@ -83,12 +81,12 @@ class LCD {
         }
         
     private:
-        LiquidCrystal_I2C lcd;
-        float Temperatura, Humedad, Lux;
+        LiquidCrystal_I2C lcd; // Instancia de la clase LiquidCrystal_I2C
+        float Temperatura, Humedad, Lux; // Variables para almacenar los valores de temperatura, humedad y luminosidad 
         int err, Kmh;        
         String CalidadAireStr, RosetaPos;
 
-        void displayTempAndHumValues() {
+        void displayTempAndHumValues() { // Función que muestra los valores de temperatura y humedad
             lcd.clear();
             lcd.setCursor(0, 0); 
             lcd.write(byte(0)); // Muestra carácter (termómetro) que está en posición mem (0)
@@ -108,7 +106,7 @@ class LCD {
             delay(displayTimeSpeed);
         }
 
-        void displayLDRValues() {
+        void displayLDRValues() { // Función que muestra los valores de luminosidad y calidad de aire
             lcd.clear();
             lcd.setCursor(0, 0); 
             lcd.write(byte(2)); // Muestra carácter (sol) que está en posición mem (2)
@@ -125,7 +123,7 @@ class LCD {
             delay(displayTimeSpeed);
         }
 
-        void displayWindSpeedValues() {
+        void displayWindSpeedValues() { // Función que muestra los valores de velocidad del viento y dirección
             lcd.clear();
             lcd.setCursor(0, 0); 
             lcd.write(byte(4));// Muestra carácter (viento) que está en posición mem (4)
