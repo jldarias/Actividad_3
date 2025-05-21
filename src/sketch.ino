@@ -7,12 +7,16 @@ del viento usando varios sensores y una pantalla LCD */
 // Equipos e Instrumentación electrónica
 //Autor: José Luis Darias Perdomo
 
+#define _TASK_SLEEP_ON_IDLE_RUN // Enable 1 ms SLEEP_IDLE powerdowns between tasks if no callback methods were invoked during the pass
+#define _TASK_STATUS_REQUEST
+
 #include <SimpleDHT.h> // Libreria del Sensor Humedad y Temperatura | DHT22
-#include <LiquidCrystal_I2C.h> // Libreria LCD I2C
+#include <LCD.cpp>
+#include <TaskScheduler.h>
 #include <Servo.h>
 
+
 #define DHTPIN 2 // Pin digital 2 como entrada DHT22
-#define I2C_ADDR    0x27 // Dirección I2C del LCD I2C
 #define LCD_COLUMNS 16 // Cantidad de columnas del LCD I2C
 #define LCD_LINES   2 // Cantidad de filas del LCD I2C
 #define ENCODER_CLK 7 // Pin digital 7 como entrada CLK del encoder
@@ -29,74 +33,12 @@ int MAX_WIND_SPEED  = 120; // Velocidad máxima del viento en km/h
 double defaultPotentiometerValue = 1023.0; //Valor máximo por defecto del potenciómetro
 
 SimpleDHT22 dht22(DHTPIN); // Se crea objeto dht22 y le asigna como parámetro DHTPIN = pin digital donde está conectado el sensor. 
-LiquidCrystal_I2C lcd(I2C_ADDR, LCD_COLUMNS, LCD_LINES);  //Se crea el objeto lcd y se le asignan como parámetros IC2_ADDR, LCD_COLUMNS, LCD_LINES
+//LiquidCrystal_I2C lcd(I2C_ADDR, LCD_COLUMNS, LCD_LINES);  //Se crea el objeto lcd y se le asignan como parámetros IC2_ADDR, LCD_COLUMNS, LCD_LINES
+LCD lcd(LCD_COLUMNS, LCD_LINES); //Se crea el objeto lcd y se le asignan como parámetros IC2_ADDR, LCD_COLUMNS, LCD_LINES
 
-byte termometro[8] = {
-  0b00100,
-  0b01010,
-  0b01010,
-  0b01110,
-  0b01110,
-  0b11111,
-  0b11111,
-  0b01110
-};
-
-byte gota[8] = {
-  0b00100,
-  0b00100,
-  0b01010,
-  0b01010,
-  0b10001,
-  0b10001,
-  0b10001,
-  0b01110
-};
-
-byte sol[8] = {
-  0b00100,
-  0b10101,
-  0b01110,
-  0b11111,
-  0b01110,
-  0b10101,
-  0b00100,
-  0b00000
-};
-
-byte calidadAire[8] = {
-  0b00000,
-  0b01110,
-  0b11111,
-  0b11111,
-  0b11111,
-  0b10101,
-  0b00100,
-  0b00000
-};
-
-byte viento[8] = {
-  0b00100,
-  0b01010,
-  0b10001,
-  0b00100,
-  0b00100,
-  0b10001,
-  0b01010,
-  0b00100
-};
-
-byte veleta[8] = {
-  0b00100,
-  0b01110,
-  0b10101,
-  0b00100,
-  0b00100,
-  0b00100,
-  0b00100,
-  0b00000
-};
-
+void displaySensorValues();
+Scheduler ts;
+Task DisplayInLCD(lcd.displayTimeSpeed, TASK_FOREVER, &displaySensorValues, &ts, true);
 
 // Definimos el valor medio de la veleta (SUR)
 int anterior = 10;
@@ -112,8 +54,6 @@ bool counterState = false;
 int tempThreshold = 3;
 int maxServoLimit = 190; // Limite máximo de los servos
 uint8_t normalStateTempControl[2] = {25, 80};
-
-
 
 //Callback de interrupciones del encoder
 void OnEncoderChange() {
@@ -137,15 +77,7 @@ void OnEncoderChange() {
 void setup() {  
   Serial.begin(115200); //Se inicia la comunicación serie a una velocidad de 115200 baudios (bits por segundo)  
 
-  lcd.init(); //Se inicia la pantalla LC I2C 
-  lcd.backlight(); //encendemos la luz de fondo (backlight) de la pantalla LCD
-  //Iniciamos caracteres personalizados
-  lcd.createChar(0, termometro); 
-  lcd.createChar(1, gota); 
-  lcd.createChar(2, sol); 
-  lcd.createChar(3, calidadAire); 
-  lcd.createChar(4, viento); 
-  lcd.createChar(5, veleta); 
+  lcd.init(); //Se inicia la pantalla LC I2C   
   
   //Configuramos los pines como entrada para las lecturas del sensor LDR y encoder. 
   pinMode(LDR_PIN, INPUT);
@@ -163,10 +95,10 @@ void setup() {
 }
 
 void controlServoState(float *temp, float *hum) {
-  //uint8_t tempPosMedia = 25;
-  
+  //uint8_t tempPosMedia = 25;  
   bool tempState = true; // Estado del frio 1 = frio, 0 = calor
   int temperaturaActual = (int)*temp; // Se convierte la variable tipo float a int
+
 
   tempState = temperaturaActual >= normalStateTempControl[0] ? true : false; // Se determina el estado del servo frio (1) o calor (0)
   
@@ -194,47 +126,23 @@ void controlServoState(float *temp, float *hum) {
   Serial.println(temperaturaActual);
 }
 
-void loop() {
-  
-  //"================ HUMEDAD & TEMPERATURA =================>>");
-  lcd.clear(); // borra el contenido de la pantalla LCD
-  lcd.setCursor(0, 0); // Posicionamos el cursor en la pantalla LCD (columna:0 | fila:0)
 
+
+void loop() {
+
+  //"================ HUMEDAD & TEMPERATURA =================>>");
   float temperature = 0; // declaramos variables locales temperatura y humidity
   float humidity = 0;
   int err = SimpleDHTErrSuccess; // Se inicializa la variable la variable err ¨sin error¨
-  if ((err = dht22.read2(&temperature, &humidity, NULL)) != SimpleDHTErrSuccess) {
-    lcd.clear();
-    lcd.println("Error DHT22 ="); // Muestra el mensaje de error
-    lcd.println(SimpleDHTErrCode(err)); // Muestra el código de error
-    lcd.print(","); 
-    lcd.println(SimpleDHTErrDuration(err)); // Muestra la duración del intento de lectura
-
-    delay(2000); // Retardo de 2 segundos
-    return; // Sale de la función
+  if((err = dht22.read2(&temperature, &humidity, NULL)) != SimpleDHTErrSuccess) {    
+    lcd.SetError(err);
+    return;
   }
 
   controlServoState(&temperature, &humidity);
-  
-  lcd.write(byte(0)); // Muestra carácter (termómetro) que está en posición mem (0)
-  lcd.setCursor(2, 0); // Posicionamos el cursor en la pantalla LCD (columna:2 | fila:0) 
-  lcd.print("TEMP: "); // Mostramos el texto TEMP:
-  lcd.print((int)temperature); // Convierte la variable tipo byte a int y la muestra 
-  lcd.print((char)223); // Muestra el símbolo º
-  lcd.println("C      "); // Muestra el carácter C
+  lcd.DHTValues(temperature, humidity);
 
-  lcd.setCursor(0, 1);  // Posicionamos cursor en la segunda fila
-  lcd.write(byte(1)); // Muestra carácter (gota) que está en posición mem (1)
-  lcd.setCursor(2, 1); // Posicionamos el cursor en la pantalla LCD (columna:2 | fila:1)
-  lcd.print("HUMEDAD: "); // Mostramos el texto HUMEDAD:
-  lcd.print((int)humidity); // Convierte la variable tipo byte a int y la muestra
-  lcd.print((char)37); // Muestra el símbolo %
-
-  delay(2000); // Retardo de 2 segundos
-
-  
-  //"================ LUMINOSIDAD  & CALIDAD DE AIRE =================>>");
-   
+  //"================ LUMINOSIDAD  & CALIDAD DE AIRE =================>>");  
   const float GAMMA = 0.7; // coeficiente que determina pendiente curva logarítmica. 
   const float RL10 = 50; // resistencia del LDR a 10 lux (por defecto, 50 kΩ) 
   int ldrValue = analogRead(LDR_PIN); // Lee LDR_PIN y devuelve un valor de 0 a 1023 (resolución de 10 bits) correspondiente a una tensión entre 0 y 5 V 
@@ -242,14 +150,7 @@ void loop() {
   float resistance = 2000 * voltage / (1 - voltage / 5.0); // Calcula la resistencia del LDR utilizando la fórmula del divisor de tensión 
   float lux = pow(RL10 * 1e3 * pow(10, GAMMA) / resistance, (1 / GAMMA)); // Calcula la iluminación en lux utilizando la relación logarítmica entre resistencia e iluminación 
 
-  lcd.clear();
-  lcd.setCursor(0, 0); 
-  lcd.write(byte(2)); // Muestra carácter (sol) que está en posición mem (2)
-  lcd.setCursor(2, 0);
-  lcd.print("LUX: ");
-  lcd.print(lux);
-  
-  
+    
   int calidadAire = analogRead(CALIDAD_AIRE_PIN); // Lee CALIDAD_AIRE_PIN y devuelve un valor de 0 a 1023
 
   //Proceso de calidad del aire
@@ -261,14 +162,9 @@ void loop() {
   } else {
     ca = "Mala";
   }
-
-  lcd.setCursor(0, 1);   
-  lcd.write(byte(3)); // Muestra carácter (calidadAire) que está en posición mem (3)
-  lcd.setCursor(2, 1);
-  lcd.print("CA: ");
-  lcd.print(ca);
-  delay(2000); 
   
+  lcd.LDRValues(lux);
+  lcd.AirQualityValues(ca);
 
   //"================ VELOCIDAD  & DIRECCION DE VIENTO =================>>");
   //Proceso de velocidad del viento
@@ -276,24 +172,17 @@ void loop() {
   int offset = (float(readViento) / defaultPotentiometerValue)  * 100; // Convertir a % 
   int kmh = (offset * MAX_WIND_SPEED) / 100;  // Convertir a km/h
 
-  lcd.clear();
-  lcd.setCursor(0, 0); 
-  lcd.write(byte(4));// Muestra carácter (viento) que está en posición mem (4)
-  lcd.setCursor(2, 0);
-  lcd.print("VEL: ");
-  lcd.print(kmh);  
-  lcd.print("km/h");
-  
-  
-  lcd.setCursor(0, 1); 
-  lcd.write(byte(5)); // Muestra carácter (veleta) que está en posición mem (5)
-  lcd.setCursor(2, 1);
-  lcd.print("DIR: ");
-  lcd.print(roseta[pos]); // Muestra la dirección del viento N, NE, SE, S, SO, O, NO, determinada por la posición del encoder
+  lcd.WindSpeedValues(kmh);
+  lcd.RosetaValues(roseta[pos]);  
 
   if(pos != anterior) {       
     anterior = pos; // Se actualiza la variable anterior si pos cambia
   }
 
-  delay(2000); 
+  ts.execute();
+  delay(500);
+}
+
+void displaySensorValues(){
+  lcd.initDisplayValues();
 }
