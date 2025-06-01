@@ -44,10 +44,10 @@ Para una aplicación real de un sistema de monitorización instalado en una boya
 
 ## *Código comentado*
 
-<pre>
-#include <SimpleDHT.h> // Libreria del Sensor Humedad y Temperatura | DHT22
+<pre> 
+#include &lt;SimpleDHT.h&gt; // Libreria del Sensor Humedad y Temperatura | DHT22 
 #include "LCD.cpp" // Libreia propia para la pantalla LCD I2C
-#include <Servo.h> // Libreria para el control de servos
+#include &lt;Servo.h&gt; // Libreria para el control de servos
 
 
 #define DHTPIN 2 // Pin digital 2 como entrada DHT22
@@ -258,8 +258,8 @@ void loop() {
 
 ### <ins>LCD.cpp</ins>
 
-<pre>#include <SimpleDHT.h>
-#include <LiquidCrystal_I2C.h>
+<pre>#include &lt;SimpleDHT.h&gt;
+#include &lt;LiquidCrystal_I2C.h&gt;
 #include "LCD_characters.h"
 
 #define I2C_ADDR    0x27
