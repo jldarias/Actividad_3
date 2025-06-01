@@ -44,7 +44,8 @@ Para una aplicación real de un sistema de monitorización instalado en una boya
 
 ## *Código comentado*
 
-<pre>#include <SimpleDHT.h> // Libreria del Sensor Humedad y Temperatura | DHT22
+<pre>
+#include <SimpleDHT.h> // Libreria del Sensor Humedad y Temperatura | DHT22
 #include "LCD.cpp" // Libreia propia para la pantalla LCD I2C
 #include <Servo.h> // Libreria para el control de servos
 
@@ -246,7 +247,8 @@ void loop() {
   lcd.initDisplayValues();
 
   delay(500);
-}</pre>
+}
+  </pre>
 
 ## *Librerías*
 
