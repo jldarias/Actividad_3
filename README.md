@@ -482,6 +482,14 @@ const byte veleta[8] = {
   0b00000
 };</pre>
 
+## *Link simulación en Wokwi*
+
+https://wokwi.com/projects/431453059341131777 
+
+## *Video simulación*
+
+
+
 ## *Autores*
 
 - José Luis Darias Perdomo  
