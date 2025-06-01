@@ -38,7 +38,9 @@ Para una aplicación real de un sistema de monitorización instalado en una boya
 
 ## *Diagrama del montaje*
 
-
+<p align="center">
+  <img src="images/Diagrama_Actividad_1.jpg" alt="Diagrama_Actividad_2" width="600">
+</p>
 
 
 
