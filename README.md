@@ -32,9 +32,13 @@ Utilizamos una conexión directa de los servos con las salidas PWM del Arduino p
 -	Breadboard: Placa para prototipado de tamaño medio (1)
 -	Cables de conexión
 
-Se ha realizado el montaje de acuerdo con la fichas técnicas de cada uno de los elementos, estudiado ejemplos de código, realizado la programación y utilizado el simulador WOKWI para compilar y verificar el correcto funcionamiento del sistema. 
+Se ha realizado el montaje de acuerdo con la fichas técnicas de cada uno de los elementos, estudiado ejemplos de código, realizado la programación y utilizado el simulador [WOKWI](https://wokwi.com/) para compilar y verificar el correcto funcionamiento del sistema. 
 
-He de matizar que para una aplicación real de un sistema de monitorización instalado en una boya climática, se deben utilizar sensores más robustos especialmente diseñados para ambientes marinos, y un microcontrolador robusto, eficiente en términos de consumo, con buena capacidad de comunicación y posibilidades de expansión, que permita su instalación en una carcasa IP68 para garantizar su estanqueidad.
+Para una aplicación real de un sistema de monitorización instalado en una boya climática, se deben utilizar sensores más robustos especialmente diseñados para ambientes marinos, y un microcontrolador profesional, eficiente en términos de consumo, con buena capacidad de comunicación y posibilidades de expansión, que permita su instalación en una carcasa IP68 para garantizar su estanqueidad.
+
+## *Diagrama del montaje*
+
+
 
 
 
