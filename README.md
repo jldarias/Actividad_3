@@ -10,13 +10,14 @@ Partiendo de la actividad 1 que consistía en realizar una aplicación de medici
 
 Así mismo, se han detectado y corregido algunos errores en la actividad 1 que pasamos a detallar a conitnuación:
 - Se ha cambiado el tipo de variable temperature y humidity pasando de tipo byte a float ya que cuando se simulaba la práctica con valores de temperatura negativos, el sistema devolvía valores fuera de rango.
-- Se ha eliminado el parpadeo del display LED
+- Se han creado dos librerías: LCD.cpp para todo lo relacionado con la presentación de información en el display LCD y LCD_characters.h que incluye sólo los iconos que se utilzan durante esta práctica; con ello conseguimos simplificar el código, y por tanto se pueda interpretar mejor, además de darle una mayor clariad a la hora de corregir errores o implementar nuevas funciones.
+- Se ha eliminado el parpadeo del display LCD a través de la función void initDisplayValues() en la librería LCD.cpp presentando los distintos valores por orden sin sobreescribirse constantemente, para ello hemos utilizado un contador, y determinado un tiempo mínimo de presentación de la información de 2s; corriendo el loop principal a 0.5s.
 
 ## *Descripción*
 
-A partir los valores medidos de temperatura (ºC) e iluminación (lux), se determinan las acciones de control y actuación que garantizan que el sistema de baterías de la boya climática se mantenga alrededor de los parámetros deseados, esto es 25 grados centígrados, y se ilumine un LED para balizar la boya en función de la iluminación en lux del exterior, para ello se han establecido 8 niveles de iluminación (oscuridad < 10 lux, iluminación muy tenue: entre 10 y 100 lux, iluminación tenue: entre 100 y 400 lux, iluminación moderada: entre 400 y 1000 lux, iluminación intensa:  entre 1000 y 1400 lux e iluminación muy intensa > 1400 lux) que se corresponden de forma inversamente proporcional al brillo del diodo LED, es decir a más oscuridad, mayor brillo que se controlará utilizando una salida con modulación por ancho de pulso (PWM) y una resistencia de 220 Ohm que limitará la corriente a través del diodo.
+A partir los valores medidos de temperatura (ºC) e iluminación (lux), se determinan las acciones de control y actuación que garantizan que el sistema de baterías de la boya climática se mantenga alrededor de los parámetros deseados, esto es 25 grados centígrados, y se ilumine un LED para balizar la boya en función de la iluminación en lux del exterior, para ello se han establecido 8 niveles de iluminación (oscuridad < 10 lux, iluminación muy tenue: entre 10 y 100 lux, iluminación tenue: entre 100 y 400 lux, iluminación moderada: entre 400 y 1000 lux, iluminación intensa:  entre 1000 y 1400 lux e iluminación muy intensa > 1400 lux) que se corresponden de forma inversamente proporcional al brillo del diodo LED, es decir a más oscuridad, mayor brillo que se controlará utilizando una salida con modulación por ancho de pulso (PWM), y una resistencia de 220 Ohm que limitará la corriente a través del diodo.
 
-Para el control de temperatura hemos cosiderado dos servomotores que actuarán sobre válvulas de control continuo que permiten el paso de un agente refrigerante o de un fluido caliente por un dispositivo de intercambio térmico con el aire. Para la simulación del proceso térmico hemos considerado una relación proporcional de 0.5 entre la acción del elemento final y el proceso y un retardo de 500ms (es decir que incrementa o decrementa medio grado cada 500ms).
+Para el control de temperatura hemos cosiderado dos servomotores que actuarán sobre válvulas de control continuo que permiten el paso de un agente refrigerante o de un fluido caliente por un dispositivo de intercambio térmico con el aire. Para la simulación del proceso térmico hemos considerado una relación proporcional de 8 entre la acción del elemento final y el proceso y un retardo de 500ms (es decir que incrementa o decrementa ocho grados cada 500ms).
 
 Se ha implementado un algoritmo de control continuo de tres posiciones con histéresis y zona muerta, es decir, con acciones continuas proporcionales al error de la medición con respecto al valor deseado. Por ejemplo, si el error es solo de 1 grado se abre solo el 1% de una válvula de control continua y así sucesivamente se incrementa un 1% de apertura de la válvula continua por cada grado de diferencia. En este caso sería un control tipo P con ganancia K=1 para cada acción de control en rampa, enfriar y calentar. Se selecciona este algoritmo porque permite acciones de control en ambos sentidos (calentar y enfriar) y la conmutación se hace en un rango de  +/-3 grados alrededor del valor deseado, que es nuestro caso son 25 ºC. En nuestro caso como son válvulas de control continuo se requiere su cierre o apertura por medio de actuadores eléctricos continuos (servo motores). 
 
@@ -134,7 +135,7 @@ void controlServoState(float *temp) { // Se controla el estado del servo frio y 
   bool tempIndicator = tempActual > normalStateTempControl[0] ? true : false;
 
   if(tempIndicator) {
-    long servoFrioAngulo = map(tempActual, normalStateTempControl[0]+tempThreshold, 60, 0, 180);
+    long servoFrioAngulo = map(tempActual, normalStateTempControl[0]+tempThreshold, 50, 0, 180);
     servoFrio.write(servoFrioAngulo);
     servoCalor.write(0); // Cerrar servo calor mientras actua el frío
   } else {
