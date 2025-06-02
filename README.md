@@ -10,7 +10,7 @@ Partiendo de la actividad 1 que consistía en realizar una aplicación de medici
 
 ## *Descripción*
 
-A partir los valores medidos de temperatura (ºC) e iluminación (lux), se determinan las acciones de control y actuación que garantizan que el sistema de baterías de la boya climática se mantenga alrededor de los parámetros deseados, esto es 25 grados centígrados, y se ilumine un LED para balizar la boya en función de la iluminación en lux del exterior, para ello se han establecido 8 niveles de iluminación (oscuridad < 10 lux, iluminación muy tenue: entre 10 y 100 lux, iluminación tenue: entre 100 y 400 lux, iluminación moderada: entre 400 y 1000 lux, iluminación intensa:  entre 1000 y 1400 lux e iluminación muy intensa > 1400 lux) que se corresponden de forma inversamente proporcional al brillo del diodo LED, es decir a más oscuridad, mayor brillo que se controlará mediante una salida PWM a través de una resistencia de 220 Ohm.
+A partir los valores medidos de temperatura (ºC) e iluminación (lux), se determinan las acciones de control y actuación que garantizan que el sistema de baterías de la boya climática se mantenga alrededor de los parámetros deseados, esto es 25 grados centígrados, y se ilumine un LED para balizar la boya en función de la iluminación en lux del exterior, para ello se han establecido 8 niveles de iluminación (oscuridad < 10 lux, iluminación muy tenue: entre 10 y 100 lux, iluminación tenue: entre 100 y 400 lux, iluminación moderada: entre 400 y 1000 lux, iluminación intensa:  entre 1000 y 1400 lux e iluminación muy intensa > 1400 lux) que se corresponden de forma inversamente proporcional al brillo del diodo LED, es decir a más oscuridad, mayor brillo que se controlará utilizando una salida con modulación por ancho de pulso (PWM) y una resistencia de 220 Ohm que limitará la corriente a través del diodo.
 
 Para el control de temperatura hemos cosiderado dos servomotores que actuarán sobre válvulas de control continuo que permiten el paso de un agente refrigerante o de un fluido caliente por un dispositivo de intercambio térmico con el aire. Para la simulación del proceso térmico hemos considerado una relación proporcional de 0.5 entre la acción del elemento final y el proceso y un retardo de 500ms (es decir que incrementa o decrementa medio grado cada 500ms).
 
@@ -56,7 +56,7 @@ Para una aplicación real de un sistema de monitorización instalado en una boya
 #define ENCODER_CLK 7 // Pin digital 7 como entrada CLK del encoder
 #define ENCODER_DT  3 // Pin digital 3 como entrada DT del encoder
 
-#define SERVO_CALOR  9 // Definimos pin para el control del servo caliente
+#define SERVO_CALOR  9 // Definimos pin para el control del servo calor
 #define SERVO_FRIO  10  // Definimos pin para el control del servo frio
 #define LED_PIN     11
 
