@@ -10,7 +10,7 @@ Partiendo de la actividad 1 que consistía en la realización de una aplicación
 
 Así mismo, se han detectado y corregido los siguientes errores en la actividad 1:
 - Se ha cambiado el tipo de variable byte de temperature y humidity a tipo float, ya que al simular el sistema con valores de temperatura negativos, el display devolvía valores fuera de rango.
-- Se han creado dos librerías: LCD.cpp que contiene el código relacionado con la presentación de información en el display I2C, y LCD_characters.h que incluye sólo los iconos que se utilizan en el display; con ello conseguimos una estructura modular que facilita el análisis del código para depurarlo o corregir errores, y una mayor flexibilidad a la hora de implementar nuevas funciones. 
+- Se han creado dos librerías: LCD.cpp que contiene el código relacionado con la presentación de información en el display I2C, y LCD_characters.h que incluye sólo los iconos que se utilizan en el display; con ello conseguimos una estructura modular que facilita el análisis del código, ya sea para depurarlo o para corregir errores, y una mayor flexibilidad a la hora de implementar nuevas funciones. 
 - Se ha eliminado el parpadeo del display LCD a través de la función void initDisplayValues() en la librería LCD.cpp presentando los distintos valores por orden sin sobreescribirse constantemente, para ello hemos utilizado un contador que genera una secuencia, y definido un tiempo mínimo de presentación de información de 2s, mientras se ejecuta el loop principal a 500 ms.
 
 ## *Descripción*
