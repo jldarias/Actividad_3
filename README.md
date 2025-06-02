@@ -6,7 +6,7 @@
 
 ## *Objetivo*
 
-Partiendo de la actividad 1 que consistía en realizar una aplicación de medición y presentación de datos del clima, en la que manejamos sensores de temperatura, humedad, iluminación, calidad de aire, velocidad y dirección del viento … de una estación meteorológica (boya climática), procesamos la medición con instrumentación programable (Arduino UNO) y presentamos los resultados en una HMI local (Display LCD I2C). En la presente actividad, que es una continuación de la anterior, añadiremos actuadores y algoritmos de control que, a partir de la medición de los sensores, mantendremos el sistema cercano a los valores deseados y presentaremos los resultados en la HMI local.
+Partiendo de la actividad 1 que consistía en la realización de una aplicación de medición y presentación de datos del clima, en la que manejamos sensores de temperatura, humedad, iluminación, calidad de aire, velocidad y dirección del viento … de una estación meteorológica (boya climática), procesamos la medición con instrumentación programable (Arduino UNO) y presentamos los resultados en una HMI local (Display LCD I2C). En la presente actividad, que es una continuación de la anterior, añadiremos actuadores y algoritmos de control que, a partir de la medición de los sensores, mantendremos el sistema cercano a los valores deseados y presentaremos los resultados en la HMI local.
 
 Así mismo, se han detectado y corregido los siguientes errores en la actividad 1:
 - Se ha cambiado el tipo de variable byte de temperature y humidity a tipo float, ya que al simular el sistema con valores de temperatura negativos, el display devolvía valores fuera de rango.
