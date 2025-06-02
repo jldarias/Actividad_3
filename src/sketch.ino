@@ -1,14 +1,10 @@
 #include <Arduino.h>
 
 //Actividad 2: Sistema de control y actuación en función del clima
-/* Este código realiza la monitorización del clima con un sistema basado en Arduino Uno
-que mide temperatura, humedad, luminosidad, calidad del aire, velocidad y dirección 
-del viento usando varios sensores y una pantalla LCD */
+/* Se completa la actividad 1 con actuadores: servomotores frio-calor y luces LED
+de señalización que ajustan su intensidad de día/noche) */
 // Equipos e Instrumentación electrónica
-//Autor: José Luis Darias Perdomo
-
-#define _TASK_SLEEP_ON_IDLE_RUN // Enable 1 ms SLEEP_IDLE powerdowns between tasks if no callback methods were invoked during the pass
-#define _TASK_STATUS_REQUEST
+//Autores: José Luis Darias Perdomo & Carlos Barrera Utrera
 
 #include <SimpleDHT.h> // Libreria del Sensor Humedad y Temperatura | DHT22
 #include <LCD.cpp> // Libreia propia para la pantalla LCD I2C
@@ -43,11 +39,10 @@ int maxpos = 19;
 // Definimos la dirección de la veleta
 String roseta[20] = {"Norte","Noreste", "Noreste", "Noreste","Noreste","Este", "Sureste","Sureste", "Sureste","Sureste","Sur", "Suroeste","Suroeste","Suroeste","Suroeste", "Oeste",  "Noroeste","Noroeste","Noroeste", "Noroeste" };
 
-
 Servo servoFrio, servoCalor; // Creamos variables para manejar servos
 bool counterState = false;
 int tempThreshold = 3;
-int maxServoLimit = 190; // Limite máximo en pasos de los servos
+int maxServoLimit = 180; // Limite máximo en pasos de los servos
 uint8_t normalStateTempControl[2] = {25, 80}; // Temperatura normal de control del servo frio (25ºC) y humedad(80%) 
 
 //Callback de interrupciones del encoder
@@ -83,71 +78,67 @@ void setup() {
   pinMode(LED_PIN, OUTPUT);
 
   //Configuramos los pines de los servos
-  servoFrio.attach(SERVO_FRIO); // Pin 9 como salida servo (válvula frio)
-  servoCalor.attach(SERVO_CALOR); // Pin 10 como salida servo (válvula calor)
+  servoFrio.attach(SERVO_FRIO); // Pin 10 como salida servo (válvula frio)
+  servoCalor.attach(SERVO_CALOR); // Pin 9 como salida servo (válvula calor)
 
   //Iniciamos callback de interrupciones del encoder 
   attachInterrupt(digitalPinToInterrupt(ENCODER_DT), OnEncoderChange, LOW);
 }
 
-void controlServoState(float *temp, float *hum) { // Se controla el estado del servo frio y calor
-  //uint8_t tempPosMedia = 25;  
-  bool tempState = true; // Estado del frio 1 = frio, 0 = calor
-  int temperaturaActual = (int)*temp; // Se convierte la variable tipo float a int
+void controlServoState(float *temp) { // Se controla el estado del servo frio y calor  
+  int tempActual = (int) *temp;
   
-  tempState = temperaturaActual > normalStateTempControl[0] ? true : false; // Se determina el estado del servo frio (1) o calor (0)  
-  bool isBoundLimit = (temperaturaActual >= normalStateTempControl[0] - tempThreshold && temperaturaActual <= normalStateTempControl[0] + tempThreshold);
+  bool tempIndicator = tempActual > normalStateTempControl[0] ? true : false;
 
-  if(tempState && (isBoundLimit || temperaturaActual < normalStateTempControl[0] - tempThreshold)) {
-    servoFrio.write(90); // Se cierra la válvula de frio        
-  } else if(!tempState && isBoundLimit || temperaturaActual > normalStateTempControl[0] + tempThreshold){
-    servoCalor.write(90);
-  }
-
-  
-  if(tempState && temperaturaActual > normalStateTempControl[0] + tempThreshold && !counterState) { // Si el estado es frio y la temperatura es mayor a 25ºC + 3ºC
-    servoFrio.write(20); // Se abre la válvula de frio un 1%
-  }else if(!tempState && temperaturaActual < normalStateTempControl[0] - tempThreshold && !counterState) { // Si el estado es calor y la temperatura es menor a 25ºC - 3ºC
-    servoCalor.write(20); // Se abre la válvula de calor un 1%    
-  }
-
-  /*int localPercent = 0;
-  int servoValue = 0;
-  if(counterState) {    
-    localPercent = temperaturaActual - tempThreshold - normalStateTempControl[0];
-    servoValue = servoFrio.read();
+  if(tempIndicator) {
+    long servoFrioAngulo = map(tempActual, normalStateTempControl[0]+tempThreshold, 50, 0, 180);
+    servoFrio.write(servoFrioAngulo);
+    servoCalor.write(0); // Cerrar servo calor mientras actua el frío
   } else {
-    localPercent = abs(temperaturaActual + tempThreshold - normalStateTempControl[0]);
-    servoValue = servoCalor.read();
-  }*/
+    long servoCalorAngulo = map(tempActual, normalStateTempControl[0]-tempThreshold, 0, 0, 180); 
+    servoCalor.write(servoCalorAngulo);
+    servoFrio.write(0); // Cerrar el servo frio mientras actua el calor
+  }
 }
 
-
-
-
-
 int ledValueState = 0;
-float luxValuePercentState = 0;
 void controlLedState(float lux) {  
-  int maxLedValue = 255; // Valor máximo del led
-  float maxLuxValue = 100916.51;
-  int percentLedState = ledValueState * 100 / maxLedValue; // Se convierte el valor del led a porcentaje
+  float state = lux;
 
-  float currluxValuePercent = lux * 100 / maxLuxValue;
-  int diff = currluxValuePercent / 100 * maxLedValue;
-  
-  if(currluxValuePercent > luxValuePercentState) { // Si el valor de luminosidad es mayor al anterior
-    aumentarIntensidadLed(diff);
-  } else {
-    disminuirIntensidadLed(diff); // Se aumenta la intensidad del led
+  if(state > 1400){
+    disminuirIntensidadLed(0);
   }
 
-  luxValuePercentState = currluxValuePercent; // Se actualiza el valor de luminosidad
+  if(state > 1000 && state < 1400)
+  {
+    disminuirIntensidadLed(55);
+  }
+
+  if(state > 400 && state < 1000)
+  {
+    disminuirIntensidadLed(83);
+  }
+
+  if(state > 100 && state < 400)
+  {
+    aumentarIntensidadLed(127);
+  }
+
+  if(state > 10 && state < 100)
+  {
+    aumentarIntensidadLed(200);
+  }
+
+  if(state < 10)
+  {
+    aumentarIntensidadLed(255);
+  }
 }
 
 void aumentarIntensidadLed(int max) { // Se aumenta el valor del led
   for(int bright = ledValueState; bright <= max; bright++) {
     analogWrite(LED_PIN, bright); // Se enciende el led
+    
     delay(10);
   }
 
@@ -156,7 +147,7 @@ void aumentarIntensidadLed(int max) { // Se aumenta el valor del led
 
 void disminuirIntensidadLed(int min) { // Se disminuye el valor del led
   for(int bright = ledValueState; bright >= min; bright--) {
-    analogWrite(LED_PIN, bright); // Se apaga el led   
+    analogWrite(LED_PIN, bright); // Se apaga el led 
     delay(10);
   }
 
@@ -174,7 +165,7 @@ void loop() {
     return;
   }
 
-  //controlServoState(&temperature, &humidity); // Se controla el estado del servo frio y calor
+  controlServoState(&temperature); // Se controla el estado del servo frio y calor
   lcd.DHTValues(temperature, humidity); // Se envían los valores de temperatura y humedad a la función DHTValues de la clase LCD
 
   //"================ LUMINOSIDAD  & CALIDAD DE AIRE =================>>");  
