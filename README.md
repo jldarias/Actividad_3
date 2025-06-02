@@ -8,6 +8,10 @@
 
 Partiendo de la actividad 1 que consistía en realizar una aplicación de medición y presentación del clima, en la que manejamos sensores de temperatura, humedad, iluminación, calidad de aire, velocidad/dirección del viento … de una estación meteorológica (boya climática), procesamos la medición con instrumentación programable (Arduino UNO) y presentamos los resultados en una HMI local (Display LCD I2C). En la presente actividad, que es una continuación de la anterior, añadiremos actuadores y algoritmos de control que, a partir de la medición de los sensores, mantendremos el sistema cercano a los valores deseados y presentaremos los resultados en la HMI local.
 
+Así mismo, se han detectado y corregido algunos errores en la actividad 1 que pasamos a detallar a conitnuación:
+- Se ha cambiado el tipo de variable temperature y humidity pasando de tipo byte a float ya que cuando se simulaba la práctica con valores de temperatura negativos, el sistema devolvía valores fuera de rango.
+- Se ha eliminado el parpadeo del display LED
+
 ## *Descripción*
 
 A partir los valores medidos de temperatura (ºC) e iluminación (lux), se determinan las acciones de control y actuación que garantizan que el sistema de baterías de la boya climática se mantenga alrededor de los parámetros deseados, esto es 25 grados centígrados, y se ilumine un LED para balizar la boya en función de la iluminación en lux del exterior, para ello se han establecido 8 niveles de iluminación (oscuridad < 10 lux, iluminación muy tenue: entre 10 y 100 lux, iluminación tenue: entre 100 y 400 lux, iluminación moderada: entre 400 y 1000 lux, iluminación intensa:  entre 1000 y 1400 lux e iluminación muy intensa > 1400 lux) que se corresponden de forma inversamente proporcional al brillo del diodo LED, es decir a más oscuridad, mayor brillo que se controlará utilizando una salida con modulación por ancho de pulso (PWM) y una resistencia de 220 Ohm que limitará la corriente a través del diodo.
