@@ -1,18 +1,13 @@
 #include <Arduino.h>
 
 //Actividad 2: Sistema de control y actuación en función del clima
-/* Este código realiza la monitorización del clima con un sistema basado en Arduino Uno
-que mide temperatura, humedad, luminosidad, calidad del aire, velocidad y dirección 
-del viento usando varios sensores y una pantalla LCD */
+/* Se completa la actividad 1 con actuadores: servomotores frio-calor y luces LED
+de señalización que ajustan su intensidad de día/noche) */
 // Equipos e Instrumentación electrónica
-//Autor: José Luis Darias Perdomo
-
-#define _TASK_SLEEP_ON_IDLE_RUN // Enable 1 ms SLEEP_IDLE powerdowns between tasks if no callback methods were invoked during the pass
-#define _TASK_STATUS_REQUEST
+//Autores: José Luis Darias Perdomo & Carlos Barrera Utrera
 
 #include <SimpleDHT.h> // Libreria del Sensor Humedad y Temperatura | DHT22
 #include <LCD.cpp> // Libreia propia para la pantalla LCD I2C
-#include <TaskScheduler.h> // Libreria para la programación de tareas
 #include <Servo.h> // Libreria para el control de servos
 
 
@@ -24,6 +19,7 @@ del viento usando varios sensores y una pantalla LCD */
 
 #define SERVO_CALOR  9 // Definimos pin para el control del servo caliente
 #define SERVO_FRIO  10  // Definimos pin para el control del servo frio
+#define LED_PIN     11
 
 int CALIDAD_AIRE_PIN = A0; // Pin A0 como entrada potenciometro CALIDAD_AIRE
 int VELOCIDAD_VIENTO_PIN = A1; // Pin A1 como entrada potenciómetro VEL_VIENTO 
@@ -33,12 +29,7 @@ int MAX_WIND_SPEED  = 120; // Velocidad máxima del viento en km/h
 double defaultPotentiometerValue = 1023.0; //Valor máximo por defecto del potenciómetro
 
 SimpleDHT22 dht22(DHTPIN); // Se crea objeto dht22 y le asigna como parámetro DHTPIN = pin digital donde está conectado el sensor. 
-//LiquidCrystal_I2C lcd(I2C_ADDR, LCD_COLUMNS, LCD_LINES);  //Se crea el objeto lcd y se le asignan como parámetros IC2_ADDR, LCD_COLUMNS, LCD_LINES
 LCD lcd(LCD_COLUMNS, LCD_LINES); // Se crea el objeto lcd y se le asignan como parámetros IC2_ADDR, LCD_COLUMNS, LCD_LINES
-
-void displaySensorValues();
-Scheduler ts; // Se crea el objeto ts 
-Task DisplayInLCD(lcd.displayTimeSpeed, TASK_FOREVER, &displaySensorValues, &ts, true); // Se crea la tarea DisplayInLCD que se ejecuta indefinidamente
 
 // Definimos el valor medio de la veleta (SUR)
 int anterior = 10;
@@ -48,11 +39,10 @@ int maxpos = 19;
 // Definimos la dirección de la veleta
 String roseta[20] = {"Norte","Noreste", "Noreste", "Noreste","Noreste","Este", "Sureste","Sureste", "Sureste","Sureste","Sur", "Suroeste","Suroeste","Suroeste","Suroeste", "Oeste",  "Noroeste","Noroeste","Noroeste", "Noroeste" };
 
-
 Servo servoFrio, servoCalor; // Creamos variables para manejar servos
 bool counterState = false;
 int tempThreshold = 3;
-int maxServoLimit = 190; // Limite máximo en pasos de los servos
+int maxServoLimit = 180; // Limite máximo en pasos de los servos
 uint8_t normalStateTempControl[2] = {25, 80}; // Temperatura normal de control del servo frio (25ºC) y humedad(80%) 
 
 //Callback de interrupciones del encoder
@@ -84,54 +74,85 @@ void setup() {
   pinMode(ENCODER_CLK, INPUT);
   pinMode(ENCODER_DT, INPUT);
 
+  //Configuramos los pines PWM para controlar la intensidad del led. 
+  pinMode(LED_PIN, OUTPUT);
+
   //Configuramos los pines de los servos
-  servoFrio.attach(SERVO_FRIO); // Pin 9 como salida servo (válvula frio)
-  servoCalor.attach(SERVO_CALOR); // Pin 10 como salida servo (válvula calor)
+  servoFrio.attach(SERVO_FRIO); // Pin 10 como salida servo (válvula frio)
+  servoCalor.attach(SERVO_CALOR); // Pin 9 como salida servo (válvula calor)
 
   //Iniciamos callback de interrupciones del encoder 
   attachInterrupt(digitalPinToInterrupt(ENCODER_DT), OnEncoderChange, LOW);
 }
 
-void controlServoState(float *temp, float *hum) { // Se controla el estado del servo frio y calor
-  //uint8_t tempPosMedia = 25;  
-  bool tempState = true; // Estado del frio 1 = frio, 0 = calor
-  int temperaturaActual = (int)*temp; // Se convierte la variable tipo float a int
+void controlServoState(float *temp) { // Se controla el estado del servo frio y calor  
+  int tempActual = (int) *temp;
   
-  tempState = temperaturaActual > normalStateTempControl[0] ? true : false; // Se determina el estado del servo frio (1) o calor (0)  
+  bool tempIndicator = tempActual > normalStateTempControl[0] ? true : false;
 
-  if(tempState && (temperaturaActual >= normalStateTempControl[0] && temperaturaActual <= normalStateTempControl[0] + tempThreshold) ) {
-    servoFrio.write(0); // Se cierra la válvula de frio
-  }else if(tempState && (temperaturaActual >= normalStateTempControl[0] - tempThreshold && temperaturaActual <= normalStateTempControl[0])) {
-    servoCalor.write(0); // Se cierra la válvula de calor 
-  }
-
-  if(tempState && temperaturaActual > normalStateTempControl[0] + tempThreshold && !counterState) { // Si el estado es frio y la temperatura es mayor a 25ºC + 3ºC
-    servoFrio.write(20); // Se abre la válvula de frio un 1%
-  }else if(!tempState && temperaturaActual < normalStateTempControl[0] - tempThreshold && !counterState) { // Si el estado es calor y la temperatura es menor a 25ºC - 3ºC
-    servoCalor.write(20); // Se abre la válvula de calor un 1%    
-  }
-
-
-
-  /*int localPercent = 0;
-  int servoValue = 0;
-  if(counterState) {    
-    localPercent = temperaturaActual - tempThreshold - normalStateTempControl[0];
-    servoValue = servoFrio.read();
+  if(tempIndicator) {
+    long servoFrioAngulo = map(tempActual, normalStateTempControl[0]+tempThreshold, 50, 0, 180);
+    servoFrio.write(servoFrioAngulo);
+    servoCalor.write(0); // Cerrar servo calor mientras actua el frío
   } else {
-    localPercent = abs(temperaturaActual + tempThreshold - normalStateTempControl[0]);
-    servoValue = servoCalor.read();
-  }*/
-  
-
-
-  //counterState = true;
-  //temperaturaActual = abs(temperaturaActual);    
-  Serial.print("Temperatura: ");
-  Serial.println(temperaturaActual);
+    long servoCalorAngulo = map(tempActual, normalStateTempControl[0]-tempThreshold, 0, 0, 180); 
+    servoCalor.write(servoCalorAngulo);
+    servoFrio.write(0); // Cerrar el servo frio mientras actua el calor
+  }
 }
 
+int ledValueState = 0;
+void controlLedState(float lux) {  
+  float state = lux;
 
+  if(state > 1400){
+    disminuirIntensidadLed(0);
+  }
+
+  if(state > 1000 && state < 1400)
+  {
+    disminuirIntensidadLed(55);
+  }
+
+  if(state > 400 && state < 1000)
+  {
+    disminuirIntensidadLed(83);
+  }
+
+  if(state > 100 && state < 400)
+  {
+    aumentarIntensidadLed(127);
+  }
+
+  if(state > 10 && state < 100)
+  {
+    aumentarIntensidadLed(200);
+  }
+
+  if(state < 10)
+  {
+    aumentarIntensidadLed(255);
+  }
+}
+
+void aumentarIntensidadLed(int max) { // Se aumenta el valor del led
+  for(int bright = ledValueState; bright <= max; bright++) {
+    analogWrite(LED_PIN, bright); // Se enciende el led
+    
+    delay(10);
+  }
+
+  ledValueState = max;
+}
+
+void disminuirIntensidadLed(int min) { // Se disminuye el valor del led
+  for(int bright = ledValueState; bright >= min; bright--) {
+    analogWrite(LED_PIN, bright); // Se apaga el led 
+    delay(10);
+  }
+
+  ledValueState = min; 
+}
 
 void loop() {
 
@@ -144,7 +165,7 @@ void loop() {
     return;
   }
 
-  controlServoState(&temperature, &humidity); // Se controla el estado del servo frio y calor
+  controlServoState(&temperature); // Se controla el estado del servo frio y calor
   lcd.DHTValues(temperature, humidity); // Se envían los valores de temperatura y humedad a la función DHTValues de la clase LCD
 
   //"================ LUMINOSIDAD  & CALIDAD DE AIRE =================>>");  
@@ -155,7 +176,7 @@ void loop() {
   float resistance = 2000 * voltage / (1 - voltage / 5.0); // Calcula la resistencia del LDR utilizando la fórmula del divisor de tensión 
   float lux = pow(RL10 * 1e3 * pow(10, GAMMA) / resistance, (1 / GAMMA)); // Calcula la iluminación en lux utilizando la relación logarítmica entre resistencia e iluminación 
 
-    
+  controlLedState(lux); // Se controla el estado del led de luminosidad
   int calidadAire = analogRead(CALIDAD_AIRE_PIN); // Lee CALIDAD_AIRE_PIN y devuelve un valor de 0 a 1023
 
   //Proceso de calidad del aire
@@ -184,10 +205,7 @@ void loop() {
     anterior = pos; // Se actualiza la variable anterior si pos cambia
   }
 
-  ts.execute(); // Se ejecuta el scheduler
-  delay(500);
-}
+  lcd.initDisplayValues();
 
-void displaySensorValues(){ // Se ejecuta la tarea DisplayInLCD
-  lcd.initDisplayValues(); // Se muestran los valores en la pantalla LCD
+  delay(500);
 }

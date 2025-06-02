@@ -7,7 +7,7 @@
 
 class LCD {        
     public:
-        int displayTimeSpeed = 2000; // Tiempo de refresco de la pantalla LCD en milisegundos
+        unsigned long displayTimeSpeed = 2000; // Tiempo de refresco de la pantalla LCD en milisegundos
         LCD(uint8_t columnas, uint8_t filas) : lcd(I2C_ADDR, columnas, filas){}
         ~LCD(){};
 
@@ -63,21 +63,38 @@ class LCD {
         }
 
         void initDisplayValues() {
+            unsigned long currentTime = millis();                           
+
             if(err != SimpleDHTErrSuccess) {                
                 lcd.clear();
                 lcd.println("Error DHT22 ="); // Muestra el mensaje de error
                 lcd.println(SimpleDHTErrCode(err)); // Muestra el código de error
                 lcd.print(","); 
                 lcd.println(SimpleDHTErrDuration(err)); // Muestra la duración del intento de lectura
-                delay(2000); // Retardo de 2 segundos
                 return;
             }
 
-            displayTempAndHumValues();            
+            if(currentTime - task_time > displayTimeSpeed){
+                if(count >= 3){
+                    count = 0;
+                }
+                
+                switch (count)
+                {
+                    case 0:
+                        displayTempAndHumValues();
+                        break;
+                    case 1:
+                        displayLDRValues();
+                        break;
+                    case 2:
+                        displayWindSpeedValues();
+                        break;
+                }
 
-            displayLDRValues();            
-
-            displayWindSpeedValues();            
+                count++;
+                task_time = currentTime;
+            } 
         }
         
     private:
@@ -85,6 +102,8 @@ class LCD {
         float Temperatura, Humedad, Lux; // Variables para almacenar los valores de temperatura, humedad y luminosidad 
         int err, Kmh;        
         String CalidadAireStr, RosetaPos;
+        unsigned long task_time = millis();
+        uint8_t count = 0;
 
         void displayTempAndHumValues() { // Función que muestra los valores de temperatura y humedad
             lcd.clear();
@@ -102,8 +121,6 @@ class LCD {
             lcd.print("HUMEDAD: "); // Mostramos el texto HUMEDAD:
             lcd.print((int)Humedad); // Convierte la variable tipo byte a int y la muestra
             lcd.print((char)37); // Muestra el símbolo %
-
-            delay(displayTimeSpeed);
         }
 
         void displayLDRValues() { // Función que muestra los valores de luminosidad y calidad de aire
@@ -119,8 +136,6 @@ class LCD {
             lcd.setCursor(2, 1);
             lcd.print("CA: ");
             lcd.print(CalidadAireStr);
-
-            delay(displayTimeSpeed);
         }
 
         void displayWindSpeedValues() { // Función que muestra los valores de velocidad del viento y dirección
@@ -137,7 +152,5 @@ class LCD {
             lcd.setCursor(2, 1);
             lcd.print("DIR: ");
             lcd.print(RosetaPos);
-
-            delay(displayTimeSpeed);
         }
 };
