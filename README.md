@@ -1,4 +1,4 @@
-# **Actividad 2: Sistema de control y actuación en función del clima**
+# **Actividad 3: Sistema de medición, control, actuación y presentación del clima, utilizando técnicas de comunicaciones, avanzadas y/o inteligentes**
 
 <p align="center">
   <img src="images/Boya_1.jpg" alt="Boya climática" width="600">
