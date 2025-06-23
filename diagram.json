@@ -67,7 +67,7 @@
     {
       "type": "wokwi-led",
       "id": "led1",
-      "top": 313.2,
+      "top": 332.4,
       "left": 445.4,
       "attrs": { "color": "orange" }
     },
@@ -81,8 +81,8 @@
     {
       "type": "wokwi-resistor",
       "id": "r1",
-      "top": 388.8,
-      "left": 431.45,
+      "top": 312,
+      "left": 441.05,
       "rotate": 90,
       "attrs": { "value": "220" }
     },
@@ -92,7 +92,9 @@
       "top": 566.4,
       "left": 729.6,
       "attrs": { "text": "VALVULA CALOR" }
-    }
+    },
+    { "type": "wokwi-ir-receiver", "id": "ir1", "top": 622.65, "left": 411.02, "attrs": {} },
+    { "type": "wokwi-ir-remote", "id": "remote1", "top": -336, "left": 614.4, "attrs": {} }
   ],
   "connections": [
     [ "uno:GND.3", "bb1:tn.1", "black", [ "v0" ] ],
@@ -127,11 +129,16 @@
     [ "servo2:PWM", "bb1:22t.d", "orange", [ "h0" ] ],
     [ "bb1:22t.a", "uno:9", "orange", [ "v-422.4", "h-375.2" ] ],
     [ "bb1:23t.a", "uno:10", "orange", [ "v-441.6", "h-394.3" ] ],
-    [ "bb1:17b.h", "uno:11", "gold", [ "h28.8", "v-547.2", "h-375" ] ],
-    [ "led1:A", "bb1:17b.g", "", [ "$bb" ] ],
-    [ "led1:C", "bb1:16b.g", "", [ "$bb" ] ],
-    [ "r1:1", "bb1:16b.h", "", [ "$bb" ] ],
-    [ "r1:2", "bb1:bn.13", "", [ "$bb" ] ]
+    [ "uno:4", "bb1:12t.a", "green", [ "v144", "h224.7" ] ],
+    [ "ir1:DAT", "bb1:12t.e", "green", [ "v0" ] ],
+    [ "ir1:VCC", "bb1:bp.10", "red", [ "v0" ] ],
+    [ "ir1:GND", "bb1:bn.10", "black", [ "v0" ] ],
+    [ "bb1:bn.13", "bb1:16b.j", "black", [ "v0" ] ],
+    [ "led1:A", "bb1:17b.i", "", [ "$bb" ] ],
+    [ "led1:C", "bb1:16b.i", "", [ "$bb" ] ],
+    [ "r1:1", "bb1:17t.b", "", [ "$bb" ] ],
+    [ "r1:2", "bb1:17b.f", "", [ "$bb" ] ],
+    [ "uno:6", "bb1:17t.a", "gold", [ "h291.7", "v336" ] ]
   ],
   "dependencies": {}
 }
