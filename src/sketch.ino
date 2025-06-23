@@ -1,8 +1,7 @@
 #include <Arduino.h>
 
-//Actividad 2: Sistema de control y actuación en función del clima
-/* Se completa la actividad 1 con actuadores: servomotores frio-calor y luces LED
-de señalización que ajustan su intensidad de día/noche) */
+//Actividad 3: Sistema de control y actuación en función del clima
+/* Se completan las actividades 1 y 2 añadiendo técnicas de comunicaciones */
 // Equipos e Instrumentación electrónica
 //Autores: José Luis Darias Perdomo & Carlos Barrera Utrera
 
