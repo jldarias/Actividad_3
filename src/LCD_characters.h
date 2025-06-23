@@ -1,5 +1,31 @@
 #include <Arduino.h>
 
+struct SensorDataValues {
+  const float min;
+  const float max;
+  float value;
+};
+
+struct SensorData {
+  struct SensorDataValues temperature{-40.0, 80.0, 0.0};
+  struct SensorDataValues humidity{0.0, 100.0, 0.0};
+  struct SensorDataValues lux{0.0, 100000.0, 0.0 };
+  struct SensorDataValues kmh{0.0, 120.0, 0.0,};
+  String airQuality;
+  String rosetaPosition;
+};
+
+const byte fullChar[] = {
+  B11111,
+  B11111,
+  B11111,
+  B11111,
+  B11111,
+  B11111,
+  B11111,
+  B11111
+};
+
 const byte termometro[8] = {
   0b00100,
   0b01010,
